@@ -3,28 +3,42 @@ package com.example.chat_pattern_mediator
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotMutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.chat_pattern_mediator.ui.theme.ChatPatternMediatorTheme
 
 
 class MainActivity : ComponentActivity(), User {
     private val mediator: ChatMediator.Base = ChatMediator.Base()
+    private val usersList = mutableListOf<String>()
+        //FIXME Быстрая реализация которая мягко говоря так себе))
+        get() {
+            field.clear()
+            mediator.users.forEach {
+                field.add(it.name)
+            }
+            if (field[0] != "Все")
+                field.add(0, "Все")
+            return field
+        }
+    private var userName: MutableState<String>? = null
+
     private var messages: SnapshotStateList<String>? = null
     private var userOne: User.Base? = null
+
     override val name: String = "Android"
     override var isActive: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,10 +90,15 @@ class MainActivity : ComponentActivity(), User {
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(value = textMessage,
                     onValueChange = { setTextMessage(it) })
+                CountrySelection()
                 Row(modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center) {
                     Button(onClick = {
-                        send(message = textMessage)
+                        var userTo: User? = null
+                        if (userName?.value != "Все") {
+                            userTo = mediator.users.find { it.name == userName?.value }
+                        }
+                        send(message = textMessage, to = userTo)
                     }) {
                         Text(text = "Send")
                     }
@@ -95,6 +114,7 @@ class MainActivity : ComponentActivity(), User {
 
                 Button(
                     onClick = {
+
                         userOne?.send(
                             message = "Message(${messages?.size ?: 0})",
                             to = this@MainActivity)
@@ -152,6 +172,51 @@ class MainActivity : ComponentActivity(), User {
         Box() {
             Text(text = msg)
         }
+    }
+
+    @Composable
+    fun CountrySelection() {
+        userName = remember {
+            mutableStateOf("Все")
+        }
+        var expanded by remember { mutableStateOf(false) }
+
+        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Row(
+                Modifier
+                    .padding(24.dp)
+                    .clickable {
+                        expanded = !expanded
+                    }
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                userName?.value?.let {
+                    Text(text = it,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(end = 8.dp))
+                }
+                Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = "")
+
+                DropdownMenu(expanded = expanded, onDismissRequest = {
+                    expanded = false
+                }) {
+                    usersList.forEach { user ->
+                        if (user != this@MainActivity.name) {
+                            DropdownMenuItem(onClick = {
+                                expanded = false
+                                userName?.value = user
+                            }) {
+                                Text(text = user)
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
     }
 }
 

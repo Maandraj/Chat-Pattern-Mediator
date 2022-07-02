@@ -6,7 +6,7 @@ interface ChatMediator {
     fun unregisterUser(user: User): Boolean
 
     class Base : ChatMediator {
-        private val users = mutableListOf<User>()
+         val users = mutableListOf<User>()
         var registerListener: ((user: User) -> Unit)? = null
         var warningListener: ((message: String) -> Unit)? = null
 
@@ -25,7 +25,7 @@ interface ChatMediator {
                     users.forEach { user -> user.receive("${from.name}: $message") }
                 }
                 Mode.ANY -> {
-                    if (to != null) to.receive("${from.name} - ${to.name}: $message")
+                    if (to != null) users.forEach { user -> user.receive("${from.name} - ${to.name}: $message")}
                     else users.forEach { user -> user.receive("${from.name}: $message") }
 
                 }
