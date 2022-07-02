@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity(), User {
             if (registerUser.isActive) messages?.add("${registerUser.name} joined the chat!")
             else messages?.add("${registerUser.name} leave chat!")
         }
-        mediator.warningListener = { msg->
+        mediator.warningListener = { msg ->
             messages?.add(msg)
         }
         setContent {
@@ -63,9 +63,9 @@ class MainActivity : ComponentActivity(), User {
 
         messages = remember { mutableStateListOf() }
 
-      remember {
-          userOne = User.Base(chatMediator = mediator, "Oleg")
-      }
+        remember {
+            userOne = User.Base(chatMediator = mediator, "Oleg")
+        }
 
         val (textMessage, setTextMessage) = remember { mutableStateOf("") }
         Column(modifier = Modifier.fillMaxSize()) {
@@ -76,12 +76,23 @@ class MainActivity : ComponentActivity(), User {
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(value = textMessage,
                     onValueChange = { setTextMessage(it) })
-                Button(
-                    onClick = {
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center) {
+                    Button(onClick = {
                         send(message = textMessage)
                     }) {
-                    Text(text = "Send")
+                        Text(text = "Send")
+                    }
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Button(
+                        onClick = {
+                            messages?.clear()
+                        },
+                    ) {
+                        Text(text = "Clear chat")
+                    }
                 }
+
                 Button(
                     onClick = {
                         userOne?.send(
