@@ -37,7 +37,7 @@ internal class ChatMediatorTest {
         userTo.join()
         val expected = "${userFrom.name} - ${userTo.name}: Hello"
         userFrom.send(message = "Hello", to = userTo, mode = Mode.PRIVATE)
-        val actual = userTo.lastMessageReceive
+        val actual = userTo.getLastMessage()
         assertEquals(expected, actual)
     }
 
@@ -68,16 +68,16 @@ internal class ChatMediatorTest {
         userTo.join()
         userFrom.leave()
         userTo.send(message = "Hello", to = userFrom, mode = Mode.PRIVATE)
-        val expected =""
-        val actual = userFrom.lastMessageReceive
+        val expected ="${userFrom.name} leave the chat"
+        val actual = userFrom.getLastMessage()
         assertEquals(expected, actual)
     }
     @Test
     fun getPublicMessagesChatZeroUsers() {
         userFrom.join()
-        userTo.send(message = "Hello", mode = Mode.PUBLIC)
-        val expected = userFrom.lastMessageReceive
-        val actual = ""
+       userTo.send(message = "Hello", mode = Mode.PUBLIC)
+        val expected = userFrom.getLastMessage()
+        val actual = "${userFrom.name} joined the chat"
         assertEquals(expected, actual)
     }
 
@@ -87,10 +87,12 @@ class TestUser(
     private val chatMediator: ChatMediator, override val name: String,
 ) : User {
     override var isActive: Boolean = false
-    override var lastMessageReceive: String = ""
-
+    override val messages: MutableList<String> = mutableListOf()
+    init {
+        println("---------------------------$name------------------------------")
+    }
     override fun receive(message: String, from: User?) {
-        lastMessageReceive = message
+        messages.add(message)
         println("Test(${name}) receive message : $message")
     }
 

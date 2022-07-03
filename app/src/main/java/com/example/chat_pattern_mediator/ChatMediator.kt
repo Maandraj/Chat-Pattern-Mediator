@@ -10,23 +10,20 @@ interface ChatMediator {
     class Base : ChatMediator {
         private val users = mutableListOf<User>()
         var registerListener: ((user: User) -> Unit)? = null
-        var warningListener: ((message: String) -> Unit)? = null
 
         override fun send(message: String, from: User, to: User?, mode: Mode): Result<Boolean> {
             try {
-                if (message.isEmpty())
-                    return Result.Error(Errors.EmptyMessage())
+
                 if (!from.isActive) {
                     val error = Errors.YourIsNotInTheChat()
-                    warningListener?.invoke(error.message)
                     return Result.Error(error)
                 }
+                if (message.isEmpty())
+                    return Result.Error(Errors.EmptyMessage())
                 if (to?.isActive == false && mode != Mode.ANY) {
                     val error = Errors.UserIsNotInTheChat()
-                    warningListener?.invoke(error.message)
-                    return Result.Error(Errors.UserIsNotInTheChat())
+                    return Result.Error(error)
                 }
-
                 when (mode) {
                     Mode.PRIVATE -> {
                         if (to == null) return Result.Error(Errors.NoUserSelected())
@@ -50,15 +47,15 @@ interface ChatMediator {
             if (user.isActive) return Result.Error(Errors.UserIsAlready())
             user.isActive = true
             users.add(user)
-            registerListener?.invoke(user)
+            users.forEach { it.receive("${user.name} joined the chat") }
             return Result.Success(true)
         }
 
         override fun unregisterUser(user: User): Result<Boolean> {
             if (!user.isActive) return Result.Error(Errors.YourIsNotInTheChat())
             user.isActive = false
+            users.forEach { it.receive("${user.name} leave the chat") }
             users.remove(user)
-            registerListener?.invoke(user)
             return Result.Success(true)
         }
 

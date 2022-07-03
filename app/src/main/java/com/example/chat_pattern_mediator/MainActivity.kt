@@ -11,7 +11,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotMutableState
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,7 +21,6 @@ import com.example.chat_pattern_mediator.ui.theme.ChatPatternMediatorTheme
 
 
 class MainActivity() : ComponentActivity(), User {
-    override var lastMessageReceive: String = ""
     private val mediator: ChatMediator.Base = ChatMediator.Base()
     private val usersList = mutableListOf<String>()
         //FIXME Быстрая реализация которая мягко говоря так себе))
@@ -31,26 +29,20 @@ class MainActivity() : ComponentActivity(), User {
             mediator.getUsers().forEach {
                 field.add(it.name)
             }
-            if (field[0] != "Все")
+            if (field.find { it == "Всё" } != null)
                 field.add(0, "Все")
             return field
         }
     private var userName: MutableState<String>? = null
+    private var messagesState: SnapshotStateList<String>? = null
 
-    private var messages: SnapshotStateList<String>? = null
-    private var userOne: User.Base? = null
+    private var userTo: User.Base? = null
 
+    override val messages: MutableList<String> = mutableListOf()
     override val name: String = "Android"
     override var isActive: Boolean = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mediator.registerListener = { registerUser ->
-            if (registerUser.isActive) messages?.add("${registerUser.name} joined the chat!")
-            else messages?.add("${registerUser.name} leave chat!")
-        }
-        mediator.warningListener = { msg ->
-            messages?.add(msg)
-        }
         setContent {
             MainContent()
         }
@@ -58,20 +50,28 @@ class MainActivity() : ComponentActivity(), User {
     }
 
     override fun receive(message: String, from: User?) {
-        lastMessageReceive = message
-        messages?.add(message)
+        messagesState?.add(message)
     }
 
     override fun send(message: String, to: User?, mode: Mode): Result<Boolean> {
-        return mediator.send(message, this, to, mode)
+        val result = mediator.send(message, this, to, mode)
+        result.message?.let { messagesState?.add(it) }
+        return result
     }
 
     override fun join(): Result<Boolean> {
-       return mediator.registerUser(this)
+        val result = mediator.registerUser(this)
+            if (result.message !== null) {
+            messagesState?.add(result.message)
+        }
+        return result
     }
 
     override fun leave(): Result<Boolean> {
-       return mediator.unregisterUser(this)
+        val result = mediator.unregisterUser(this)
+        if (result.message != null)
+            messagesState?.add(result.message)
+        return result
     }
 
 
@@ -84,11 +84,9 @@ class MainActivity() : ComponentActivity(), User {
 
     @Composable
     fun MainContent() {
-
-        messages = remember { mutableStateListOf() }
-
         remember {
-            userOne = User.Base(chatMediator = mediator, "Oleg")
+            messagesState = messages.toMutableStateList()
+            userTo = User.Base(chatMediator = mediator, "Oleg")
         }
 
         val (textMessage, setTextMessage) = remember { mutableStateOf("") }
@@ -100,7 +98,7 @@ class MainActivity() : ComponentActivity(), User {
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 TextField(value = textMessage,
                     onValueChange = { setTextMessage(it) })
-                CountrySelection()
+                UsersSelection()
                 Row(modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center) {
                     Button(onClick = {
@@ -115,7 +113,7 @@ class MainActivity() : ComponentActivity(), User {
                     Spacer(modifier = Modifier.width(15.dp))
                     Button(
                         onClick = {
-                            messages?.clear()
+                            messagesState?.clear()
                         },
                     ) {
                         Text(text = "Clear chat")
@@ -124,9 +122,8 @@ class MainActivity() : ComponentActivity(), User {
 
                 Button(
                     onClick = {
-
-                        userOne?.send(
-                            message = "Message(${messages?.size ?: 0})",
+                        userTo?.send(
+                            message = "Message(${messagesState?.size ?: 0})",
                             to = this@MainActivity)
                     },
                 ) {
@@ -136,7 +133,7 @@ class MainActivity() : ComponentActivity(), User {
                     horizontalArrangement = Arrangement.Center) {
                     Button(
                         onClick = {
-                            mediator.registerUser(this@MainActivity)
+                            join()
                         },
                     ) {
                         Text(text = "Join chat")
@@ -144,10 +141,19 @@ class MainActivity() : ComponentActivity(), User {
                     Spacer(modifier = Modifier.width(15.dp))
                     Button(
                         onClick = {
-                            mediator.unregisterUser(this@MainActivity)
+                            leave()
                         },
                     ) {
                         Text(text = "Leave chat")
+                    }
+                    Spacer(modifier = Modifier.width(15.dp))
+
+                    Button(
+                        onClick = {
+                            userTo?.join()
+                        },
+                    ) {
+                        Text(text = "Join another")
                     }
                 }
 
@@ -159,11 +165,7 @@ class MainActivity() : ComponentActivity(), User {
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-
-                messages?.let {
-                    Chat(it)
-                }
-
+                messagesState?.let { Chat(it) }
             }
 
         }
@@ -185,7 +187,7 @@ class MainActivity() : ComponentActivity(), User {
     }
 
     @Composable
-    fun CountrySelection() {
+    fun UsersSelection() {
         userName = remember {
             mutableStateOf("Все")
         }

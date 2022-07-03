@@ -3,19 +3,22 @@ package com.example.chat_pattern_mediator
 interface User {
     val name: String
     var isActive: Boolean
-    var lastMessageReceive: String
+    val messages : MutableList<String>
     fun receive(message: String, from: User? = null)
     fun send(message: String, to: User? = null, mode: Mode = Mode.ANY): Result<Boolean>
     fun join(): Result<Boolean>
     fun leave(): Result<Boolean>
 
+    fun getLastMessage() : String{
+        return messages.last()
+    }
 
     class Base(private val chatMediator: ChatMediator, override val name: String) : User {
         override var isActive: Boolean = false
-        override var lastMessageReceive: String = ""
+        override val messages: MutableList<String> = mutableListOf()
 
         override fun receive(message: String, from: User?) {
-            lastMessageReceive = message
+            messages.add(message)
             println(message)
         }
 
