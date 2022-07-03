@@ -21,13 +21,14 @@ import androidx.compose.ui.unit.sp
 import com.example.chat_pattern_mediator.ui.theme.ChatPatternMediatorTheme
 
 
-class MainActivity : ComponentActivity(), User {
+class MainActivity() : ComponentActivity(), User {
+    override var lastMessageReceive: String = ""
     private val mediator: ChatMediator.Base = ChatMediator.Base()
     private val usersList = mutableListOf<String>()
         //FIXME Быстрая реализация которая мягко говоря так себе))
         get() {
             field.clear()
-            mediator.users.forEach {
+            mediator.getUsers().forEach {
                 field.add(it.name)
             }
             if (field[0] != "Все")
@@ -57,11 +58,20 @@ class MainActivity : ComponentActivity(), User {
     }
 
     override fun receive(message: String, from: User?) {
+        lastMessageReceive = message
         messages?.add(message)
     }
 
-    override fun send(message: String, to: User?, mode: Mode): Boolean {
+    override fun send(message: String, to: User?, mode: Mode): Result<Boolean> {
         return mediator.send(message, this, to, mode)
+    }
+
+    override fun join(): Result<Boolean> {
+       return mediator.registerUser(this)
+    }
+
+    override fun leave(): Result<Boolean> {
+       return mediator.unregisterUser(this)
     }
 
 
@@ -96,7 +106,7 @@ class MainActivity : ComponentActivity(), User {
                     Button(onClick = {
                         var userTo: User? = null
                         if (userName?.value != "Все") {
-                            userTo = mediator.users.find { it.name == userName?.value }
+                            userTo = mediator.getUsers().find { it.name == userName?.value }
                         }
                         send(message = textMessage, to = userTo)
                     }) {
