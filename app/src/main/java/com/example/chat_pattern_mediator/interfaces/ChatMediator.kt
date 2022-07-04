@@ -1,5 +1,9 @@
-package com.example.chat_pattern_mediator
+package com.example.chat_pattern_mediator.interfaces
 
+import com.example.chat_pattern_mediator.resource.Mode
+import com.example.chat_pattern_mediator.resource.Errors
+import com.example.chat_pattern_mediator.resource.Result
+import com.example.chat_pattern_mediator.resource.Successes
 import java.lang.Exception
 
 interface ChatMediator {
@@ -9,11 +13,8 @@ interface ChatMediator {
 
     class Base : ChatMediator {
         private val users = mutableListOf<User>()
-        var registerListener: ((user: User) -> Unit)? = null
-
         override fun send(message: String, from: User, to: User?, mode: Mode): Result<Boolean> {
             try {
-
                 if (!from.isActive) {
                     val error = Errors.YourIsNotInTheChat()
                     return Result.Error(error)
@@ -47,14 +48,14 @@ interface ChatMediator {
             if (user.isActive) return Result.Error(Errors.UserIsAlready())
             user.isActive = true
             users.add(user)
-            users.forEach { it.receive("${user.name} joined the chat") }
+            users.forEach { it.receive(Successes.JoiningChatSuccess(user.name).message) }
             return Result.Success(true)
         }
 
         override fun unregisterUser(user: User): Result<Boolean> {
             if (!user.isActive) return Result.Error(Errors.YourIsNotInTheChat())
             user.isActive = false
-            users.forEach { it.receive("${user.name} leave the chat") }
+            users.forEach { it.receive(Successes.LeaveChatSuccess(user.name).message) }
             users.remove(user)
             return Result.Success(true)
         }

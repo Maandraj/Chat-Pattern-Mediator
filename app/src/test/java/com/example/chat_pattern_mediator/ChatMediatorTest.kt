@@ -1,5 +1,11 @@
 package com.example.chat_pattern_mediator
 
+import com.example.chat_pattern_mediator.interfaces.ChatMediator
+import com.example.chat_pattern_mediator.interfaces.User
+import com.example.chat_pattern_mediator.resource.Errors
+import com.example.chat_pattern_mediator.resource.Mode
+import com.example.chat_pattern_mediator.resource.Result
+import com.example.chat_pattern_mediator.resource.Successes
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -68,16 +74,16 @@ internal class ChatMediatorTest {
         userTo.join()
         userFrom.leave()
         userTo.send(message = "Hello", to = userFrom, mode = Mode.PRIVATE)
-        val expected ="${userFrom.name} leave the chat"
+        val expected = Successes.LeaveChatSuccess(userFrom.name).message
         val actual = userFrom.getLastMessage()
         assertEquals(expected, actual)
     }
     @Test
     fun getPublicMessagesChatZeroUsers() {
         userFrom.join()
-       userTo.send(message = "Hello", mode = Mode.PUBLIC)
+        userTo.send(message = "Hello", mode = Mode.PUBLIC)
         val expected = userFrom.getLastMessage()
-        val actual = "${userFrom.name} joined the chat"
+        val actual = Successes.JoiningChatSuccess(userFrom.name).message
         assertEquals(expected, actual)
     }
 

@@ -17,6 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.chat_pattern_mediator.interfaces.ChatMediator
+import com.example.chat_pattern_mediator.interfaces.User
+import com.example.chat_pattern_mediator.resource.Mode
+import com.example.chat_pattern_mediator.resource.Result
 import com.example.chat_pattern_mediator.ui.theme.ChatPatternMediatorTheme
 
 

@@ -1,4 +1,7 @@
-package com.example.chat_pattern_mediator
+package com.example.chat_pattern_mediator.interfaces
+
+import com.example.chat_pattern_mediator.resource.Mode
+import com.example.chat_pattern_mediator.resource.Result
 
 interface User {
     val name: String

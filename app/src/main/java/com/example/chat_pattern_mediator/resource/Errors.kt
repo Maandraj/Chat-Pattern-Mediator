@@ -1,14 +1,4 @@
-package com.example.chat_pattern_mediator
-
-sealed class Result<T>(
-    val data: T? = null,
-    val message: String? = null,
-) {
-    class Success<T>(data: T) : Result<T>(data = data)
-
-    class Error<T>(error: Errors) : Result<T>(message = error.message)
-
-}
+package com.example.chat_pattern_mediator.resource
 
 sealed class Errors(var message: String) {
     class BaseError(error: String) : Errors(error)
@@ -17,5 +7,4 @@ sealed class Errors(var message: String) {
     class UserIsNotInTheChat(error: String = "The user is not in the chat") : Errors(error)
     class EmptyMessage(error: String = "Empty message send") : Errors(error)
     class UserIsAlready(error: String = "The user is already in the chat") : Errors(error)
-
 }
