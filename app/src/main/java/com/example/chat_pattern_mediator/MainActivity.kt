@@ -65,7 +65,7 @@ class MainActivity() : ComponentActivity(), User {
 
     override fun join(): Result<Boolean> {
         val result = mediator.registerUser(this)
-            if (result.message !== null) {
+        if (result.message !== null) {
             messagesState?.add(result.message)
         }
         return result

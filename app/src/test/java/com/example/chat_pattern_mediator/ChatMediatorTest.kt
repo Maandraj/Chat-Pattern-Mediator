@@ -54,20 +54,23 @@ internal class ChatMediatorTest {
         val actual = true
         assertEquals(expected.data, actual)
     }
+
     @Test
     fun joiningChatAndSendMessagePrivateTheUserWhoIsNot() {
         userFrom.join()
-        val expected =  userFrom.send(message = "Hello", to = userTo, mode = Mode.PRIVATE)
+        val expected = userFrom.send(message = "Hello", to = userTo, mode = Mode.PRIVATE)
         val actual = Errors.UserIsNotInTheChat().message
         assertEquals(expected.message, actual)
     }
+
     @Test
     fun joiningChatAndSendMessageAnyTheUserWhoIsNot() {
         userFrom.join()
-        val expected =  userFrom.send(message = "Hello", to = userTo, mode = Mode.ANY)
+        val expected = userFrom.send(message = "Hello", to = userTo, mode = Mode.ANY)
         val actual = true
         assertEquals(expected.data, actual)
     }
+
     @Test
     fun joiningChatAndLeaveDoneGetNewMessage() {
         userFrom.join()
@@ -78,6 +81,7 @@ internal class ChatMediatorTest {
         val actual = userFrom.getLastMessage()
         assertEquals(expected, actual)
     }
+
     @Test
     fun getPublicMessagesChatZeroUsers() {
         userFrom.join()
@@ -94,9 +98,11 @@ class TestUser(
 ) : User {
     override var isActive: Boolean = false
     override val messages: MutableList<String> = mutableListOf()
+
     init {
         println("---------------------------$name------------------------------")
     }
+
     override fun receive(message: String, from: User?) {
         messages.add(message)
         println("Test(${name}) receive message : $message")
@@ -104,7 +110,7 @@ class TestUser(
 
     override fun send(message: String, to: User?, mode: Mode): Result<Boolean> {
         val result = chatMediator.send(message, this, to, mode)
-        println("Test(${name}) send message(${to?.name ?: ""}) result: ${ result.message ?: result.data}")
+        println("Test(${name}) send message(${to?.name ?: ""}) result: ${result.message ?: result.data}")
         return result
     }
 

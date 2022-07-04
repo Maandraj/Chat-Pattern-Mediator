@@ -6,13 +6,13 @@ import com.example.chat_pattern_mediator.resource.Result
 interface User {
     val name: String
     var isActive: Boolean
-    val messages : MutableList<String>
+    val messages: MutableList<String>
     fun receive(message: String, from: User? = null)
     fun send(message: String, to: User? = null, mode: Mode = Mode.ANY): Result<Boolean>
     fun join(): Result<Boolean>
     fun leave(): Result<Boolean>
 
-    fun getLastMessage() : String{
+    fun getLastMessage(): String {
         return messages.last()
     }
 
