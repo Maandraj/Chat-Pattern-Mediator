@@ -123,7 +123,6 @@ class MainActivity() : ComponentActivity(), User {
                         Text(text = "Clear chat")
                     }
                 }
-
                 Button(
                     onClick = {
                         userTo?.send(
@@ -152,6 +151,9 @@ class MainActivity() : ComponentActivity(), User {
                     }
                     Spacer(modifier = Modifier.width(15.dp))
 
+                }
+                Row(modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center) {
                     Button(
                         onClick = {
                             userTo?.join()
@@ -159,13 +161,20 @@ class MainActivity() : ComponentActivity(), User {
                     ) {
                         Text(text = "Join another")
                     }
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Button(
+                        onClick = {
+                            userTo?.leave()
+                        },
+                    ) {
+                        Text(text = "Leave another")
+                    }
                 }
-
             }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = 15.dp)
+                    .padding(top = 5.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
